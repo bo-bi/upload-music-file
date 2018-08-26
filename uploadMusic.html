@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>上传音乐</title>
+    <style>
+        .box {
+          width: 1000px;
+          margin: 15px 0 0 15px;
+        }
+        .upload-input {
+          display: none;
+          margin-top: 20px;
+        }
+        .upload-text {
+          font-size: 12px;
+          margin-top: 5px;
+        }
+        .music-box audio {
+            margin-top: 20px;
+        }
+        .music-info {
+            border-collapse: collapse;
+        }
+        .music-info td, .music-info th {
+            font-size: 1em;
+            border: 1px solid #ccc;
+            padding: 3px 7px 2px 7px;
+        }
+        .music-info th {
+            font-size: 1.1em;
+            text-align: left;
+            padding-top: 5px;
+            padding-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+  <div id="box" class="box">
+    <input type="file" id="fileInput" name="musicFile" onchange="readAsDataURL(this)" />
+    <div id="musicBox" class="music-box"></div>
+    <input type="button" id="uploadInput"  class="upload-input"value="上传音乐" onclick="uploadMusic()" />
+    <p id="uploadText" class="upload-text"></p>
+    <p id="result-data"></p>
+    <div id="tableBox"></div>
+  </div>
+    <script>
+        var fileInput = document.getElementById("fileInput");
+        var uploadText = document.getElementById('uploadText');
+        var uploadInput = document.getElementById('uploadInput');
+        var tableBox = document.getElementById('tableBox');
+
+        function uploadMusic() {
+          var file = fileInput.files[0];;
+          var formData = new FormData();
+          formData.append("file", file);
+          var xhr = new XMLHttpRequest();
+          xhr.open("POST", 'http://192.168.3.9:11112/api/music_recog_post/');
+          xhr.send(formData);
+          xhr.timeout = 3000;
+          uploadText.innerHTML = '<span style="color: #fb3232;">上传中</span>';
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+              console.log(xhr.responseText);
+              var data = xhr.responseText
+              uploadText.innerHTML = '<span style="color: #666;">已上传</span>';
+              uploadInput.style.display = 'none';
+              createTable(data);
+            }else {
+              uploadText.innerHTML = '<span style="color: #fb3232;">上传失败</span>';
+
+              // delete start
+              var data = {
+                  "song_id":36,
+                  "song_name":"265. Markus Schulz - Never Be The Same (Markus Schulz Coldharbour Club Mix)",
+                  "file_sha1":"AD85C2E28139BD8CEC9F9726947CAE66A3506241",
+                  "confidence":3,
+                  "offset_seconds":19.22612,
+                  "match_time":1.6759729385375977,
+                  "offset":414
+              }
+
+                uploadText.innerHTML = '<span style="color: #666;">已上传</span>';
+                uploadInput.style.display = 'none';
+                createTable(data);
+              // delete end
+
+            }
+          }
+
+          xhr.ontimeout = function(){
+              uploadText.innerHTML = '<span style="color: #fb3232;">上传超时</span>';
+          }
+        }
+
+        function readAsDataURL(that) {
+          tableBox.innerHTML = '';
+          uploadText.innerHTML = '';
+
+          var file = that.files[0];
+          var musicBox = document.getElementById("musicBox");
+
+          var reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = function () {
+            musicBox.innerHTML =
+              '<audio controls="controls" autobuffer="autobuffer" id="audio">' +
+                '<source src="' + this.result + '" />' +
+              '</audio>'
+            uploadInput.style.display = 'block';
+          }
+        }
+
+        function createTable(data) {
+          var str =
+            ['<table class="music-info">',
+            '    <tr>',
+            '        <th>Key</th>',
+            '        <th>Value</th>',
+            '    </tr>',
+            '    <tr>',
+            '        <td>歌曲ID</td>',
+            '        <td>'+ data.song_id +'</td>',
+            '    </tr>',
+            '    <tr>',
+            '        <td>歌曲名</td>',
+            '        <td>'+ data.song_name +'</td>',
+            '    </tr>',
+            '    <tr>',
+            '        <td>文件哈希值</td>',
+            '        <td>'+ data.file_sha1 +'</td>',
+            '    </tr>',
+            '    <tr>',
+            '        <td>置信度</td>',
+            '        <td>'+ data.confidence +'</td>',
+            '    </tr>',
+            '    <tr>',
+            '        <td>歌曲中起始时间（秒）</td>',
+            '        <td>'+ data.offset_seconds.toFixed(2) +'</td>',
+            '    </tr>',
+            '    <tr>',
+            '        <td>检测耗时（秒）</td>',
+            '        <td>'+ data.match_time.toFixed(2) +'</td>',
+            '    </tr>',
+            '</table>'].join("");
+
+          tableBox.innerHTML = str
+        }
+
+    </script>
+</body>
+</html>

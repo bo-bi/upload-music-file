@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .box {
+
+        }
+        .upload-btn {
+            display: inline-block;
+            width: 80px;
+            height: 32px;
+            line-height: 32px;
+            background-color: #409eff;
+            color: #fff;
+            text-align: center;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+            position: absolute;
+            left: 30px;
+            top: 30px;
+        }
+        .upload-input {
+            /*width: 80px;*/
+            /*height: 32px;*/
+            /*position: absolute;*/
+            /*left: 30px;*/
+            /*top: 30px;*/
+            /*opacity: 0;*/
+            /*cursor: pointer;*/
+        }
+        .upload-text {
+            display: none;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+  <div class="box">
+    <form action="http://192.168.3.9:11112/api/music_recog_post/" method="post" enctype="multipart/form-data"  id="evaluate-uppic-form" target="evaluateUploadframe">
+      <input type="file" id="file" name="musicFile" class="upload-input" onchange="uploadMusic(this)" />
+    </form>
+    <!--<span id="btn" class="upload-btn">点击上传</span>-->
+    <!--<input type="file" id="file" class="upload-input" onchange="uploadMusic(this)" />-->
+    <input type="button" value="显示音乐" onclick="readAsDataURL()" />
+    <div id="result" name="result"></div>
+    <p id="upload-text"></p>
+    <iframe id="evaluateUploadframe" name="evaluateUploadframe" style="display:none"></iframe>
+  </div>
+    <script>
+        var url='';
+        var src='';
+
+        var result = document.getElementById("result");
+        var file = document.getElementById("file");
+
+        function uploadMusic(that) {
+          console.log(that, 'that')
+          var r= new FileReader();
+          var f=that.files[0];//单张图片，为第一张图片
+          console.log(f, 'f[0]')
+          if(f == undefined) {
+              return;
+          }
+          r.readAsDataURL(f);//读取为base64
+
+          var formData = new FormData();
+          formData.append("file", f);
+
+          console.log(formData, 'formData')
+          var xhr = new XMLHttpRequest();
+          xhr.open("POST", 'http://192.168.3.9:11112/api/music_recog_post/');
+          xhr.send(formData);
+            xhr.onreadystatechange = function () {
+                // 这步为判断服务器是否正确响应
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    console.log(xhr.responseText);
+                }else {
+                    console.log('error')
+                }
+            };
+
+
+
+        }
+
+        function readAsDataURL() {
+            var file = document.getElementById("file").files;
+            console.log(file, 'file')
+            var result = document.getElementById("result");
+            var audio = document.getElementById("audio");
+            for(var i = 0; i < file.length; i++) {
+                var reader = new FileReader();
+                reader.readAsDataURL(file[i]);
+                reader.onload = function (e) {
+                    console.log(reader, 'reader')
+                    console.log(1111)
+                    console.log(this.result, 'this.result')
+                    result.innerHTML = '<audio controls="controls" autobuffer="autobuffer" id="audio">' +
+                                            '<source src="'+this.result+'" />' +
+                                       '</audio>'
+                }
+            }
+        }
+
+        var file = document.getElementById("file").files;
+        // console.log(file, 'file')
+        var result = document.getElementById("result");
+        for(var i = 0; i < file.length; i++) {
+            var reader = new FileReader();
+            reader.readAsDataURL(file[i]);
+            reader.onload = function (e) {
+                console.log(reader, 'reader')
+                console.log(1111)
+                console.log(this.result, 'this.result')
+                result.innerHTML = '<audio controls="controls" autobuffer="autobuffer" id="audio">' +
+                    '<source src="'+this.result+'" />' +
+                    '</audio>'
+            }
+        }
+
+    </script>
+  <script src="http://common.duia.com/common/js/jquery-1.9.1.js" type="text/javascript" charset="utf-8"></script>
+</body>
+</html>
